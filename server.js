@@ -3,7 +3,7 @@ const app = express()
 
 app.use(express.static('frontend'))
 app.use((req, res) => {
-    res.json('Votre requête a bien été reçue !' );
+    res.json({message :'Votre requête a bien été reçue !'});
 
 });
 
