@@ -22,8 +22,8 @@ function createRootFolder() {
         .catch(createRootFolderNoVerify);
 }
 
-function listAllFoldersAndFiles() {
-    const allFoldersAndFilesPromise = fs.readdir(ALPS_DRIVE_ROOT, {withFileTypes: true});
+function listAllFoldersAndFiles(path = ALPS_DRIVE_ROOT) {
+    const allFoldersAndFilesPromise = fs.readdir(path, {withFileTypes: true});
     return allFoldersAndFilesPromise.then((folderAndFilesList) => {
         let folderAndFilesTab = []
         folderAndFilesList.forEach(result => {
@@ -34,6 +34,9 @@ function listAllFoldersAndFiles() {
         })
         return folderAndFilesTab
     })
+        .catch((err) => {
+            console.log(err)
+        })
 }
 
 function getFolderOrFileByName(name) {
@@ -43,22 +46,37 @@ function getFolderOrFileByName(name) {
     return content.then((result) => {
 
         if (result.isFile()) {
+
             return fs.readFile(fileName)
 
+        } else if (result.isDirectory()) {
+            return listAllFoldersAndFiles(fileName)
         } else {
-            return fs.readdir(fileName)
+            console.log('Error 404')
         }
 
     })
+        .catch((err) => {
+            console.log(err)
+        })
 
 }
 
-function createFolder() {
+function createFolder(name) {
+    const folder = path.join(ALPS_DRIVE_ROOT, name)
+    return fs.access(folder).then(() => {
+        console.log('Le dossier existe déjà')
+    })
+        .catch(() => {
+            return fs.mkdir(folder)
+        })
 
 }
+
 
 module.exports = {
     createRootFolder: createRootFolder,
     listAllFoldersAndFiles: listAllFoldersAndFiles,
     getFolderOrFileByName: getFolderOrFileByName,
+    createFolder: createFolder,
 };
