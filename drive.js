@@ -5,7 +5,7 @@ const path = require('path')
 const ALPS_DRIVE_ROOT = path.join(os.tmpdir(), 'root');
 
 function logFolderExist() {
-    console.log('Le dossier existe');
+    console.log('Le dossier ' + ALPS_DRIVE_ROOT + ' existe bien');
 }
 
 function createRootFolderNoVerify() {
@@ -70,13 +70,75 @@ function createFolder(name) {
         .catch(() => {
             return fs.mkdir(folder)
         })
+}
+
+function createFolderInSpecificFolder(name, name2) {
+    const folder = path.join(ALPS_DRIVE_ROOT, name, name2)
+    return fs.access(folder).then(() => {
+        console.log('Le dossier existe déjà')
+    })
+        .catch(() => {
+            return fs.mkdir(folder)
+        })
+}
+
+function deleteFolderOrFile(name) {
+    const folder = path.join(ALPS_DRIVE_ROOT, name)
+    return fs.access(folder).then(() => {
+
+        return fs.rm(folder, {recursive: true})
+    })
+        .catch((err) => {
+            console.log(err)
+        })
 
 }
 
+function deleteFolderOrFileInSpecificFolder(name, name2) {
+    const folder = path.join(ALPS_DRIVE_ROOT, name, name2)
+    return fs.access(folder).then(() => {
+
+        return fs.rm(folder, {recursive: true})
+    })
+        .catch((err) => {
+            console.log(err)
+        })
+}
+
+
+function uploadFile(file, name) {
+    const dest = path.join(ALPS_DRIVE_ROOT, name)
+
+    return fs.copyFile(file, dest).then(() => {
+        console.log('The file was successfully uploaded!')
+    })
+
+        .catch((err) => {
+            console.log(err)
+        })
+
+}
+
+function uploadFileInSpecificFolder(file, name, name2) {
+    const dest = path.join(ALPS_DRIVE_ROOT, name, name2)
+
+    return fs.copyFile(file, dest).then(() => {
+        console.log('The file was successfully uploaded in the specific folder!')
+    })
+
+        .catch((err) => {
+            console.log(err)
+        })
+}
 
 module.exports = {
     createRootFolder: createRootFolder,
     listAllFoldersAndFiles: listAllFoldersAndFiles,
     getFolderOrFileByName: getFolderOrFileByName,
     createFolder: createFolder,
+    createFolderInSpecificFolder: createFolderInSpecificFolder,
+    deleteFolderOrFile: deleteFolderOrFile,
+    deleteFolderOrFileInSpecificFolder: deleteFolderOrFileInSpecificFolder,
+    uploadFile: uploadFile,
+    uploadFileInSpecificFolder: uploadFileInSpecificFolder
 };
