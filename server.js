@@ -33,17 +33,19 @@ app.get('/api/drive/:folder/:name?', (req, res) => {
     })
         .catch((err) => {
             console.log(err)
+            res.sendStatus(404)
+            console.log('Erreur 404 : Ressource introuvable')
         })
 
 })
 
 app.post('/api/drive', (req, res) => {
     const name = req.query.name
+
     const regex = /^[a-zA-Z0-9]*$/
     const test = regex.test(name)
 
-    if (test === true) {
-        console.log(test + ' if')
+    if (test) {
         drive.createFolder(name).then(result => {
             res.send(result)
         })
@@ -52,21 +54,27 @@ app.post('/api/drive', (req, res) => {
             })
 
     } else {
-        console.log(test + ' else')
         res.sendStatus(400)
+        console.log('Le nom du dossier ne doit contenir que des caractères alphanumériques')
     }
 })
 
 app.post('/api/drive/:folder/:name?', (req, res) => {
-    const folder = req.params.folder;
-    const name = req.query.name;
+    const folder = req.params.folder
+    const name = req.query.name
 
-    drive.createFolderInSpecificFolder(folder, name).then(result => {
-        res.send(result)
-    })
-        .catch((err) => {
-            console.log(err)
+    const regex = /^[a-zA-Z0-9]*$/
+    const test = regex.test(name)
+    if (test) {
+        drive.createFolder(name, folder).then(result => {
+            res.send(result)
         })
+            .catch((err) => {
+                console.log(err)
+            })
+    } else {
+        res.sendStatus(400)
+    }
 })
 
 app.delete('/api/drive/:name?', (req, res) => {
@@ -82,10 +90,10 @@ app.delete('/api/drive/:name?', (req, res) => {
 })
 
 app.delete('/api/drive/:folder/:name?', (req, res) => {
-    const folder = req.params.folder;
     const name = req.params.name;
+    const folder = req.params.folder;
 
-    drive.deleteFolderOrFileInSpecificFolder(folder, name).then(result => {
+    drive.deleteFolderOrFile(name, folder).then(result => {
         res.send(result)
     })
         .catch((err) => {
@@ -94,22 +102,25 @@ app.delete('/api/drive/:folder/:name?', (req, res) => {
 })
 
 
-app.put('/api/drive/:name?', (req, res) => {
+app.put('/api/drive', (req, res) => {
     const file = req.files.file.file
     const name = req.files.file.filename
+
     drive.uploadFile(file, name).then(result => {
         res.send(result)
     })
         .catch((err) => {
             console.log(err)
         })
+
 })
 
-app.put('/api/drive/:folder/:name?', (req, res) => {
+app.put('/api/drive/:folder', (req, res) => {
     const file = req.files.file.file
     const folder = req.params.folder
     const name = req.files.file.filename
-    drive.uploadFileInSpecificFolder(file, folder, name).then(result => {
+
+    drive.uploadFile(file, name, folder).then(result => {
         res.send(result)
     })
         .catch((err) => {

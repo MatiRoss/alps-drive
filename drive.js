@@ -50,7 +50,7 @@ function getFolderOrFileByName(name) {
             return fs.readFile(fileName)
 
         } else if (result.isDirectory()) {
-            return listAllFoldersAndFiles(fileName)
+            return listAllFoldersAndFiles(fileName, {recursive: true})
         } else {
             console.log('Error 404')
         }
@@ -62,31 +62,42 @@ function getFolderOrFileByName(name) {
 
 }
 
-function createFolder(name) {
-    const folder = path.join(ALPS_DRIVE_ROOT, name)
-    return fs.access(folder).then(() => {
+function createFolder(name, folder = false) {
+    function hasFolder(folder) {
+        if (folder) {
+            return path.join(ALPS_DRIVE_ROOT, folder, name)
+
+        } else {
+            return path.join(ALPS_DRIVE_ROOT, name)
+        }
+    }
+
+    const file = hasFolder(folder)
+
+    return fs.access(file).then(() => {
         console.log('Le dossier existe déjà')
     })
         .catch(() => {
-            return fs.mkdir(folder)
+            return fs.mkdir(file, {recursive: true})
         })
 }
 
-function createFolderInSpecificFolder(name, name2) {
-    const folder = path.join(ALPS_DRIVE_ROOT, name, name2)
-    return fs.access(folder).then(() => {
-        console.log('Le dossier existe déjà')
-    })
-        .catch(() => {
-            return fs.mkdir(folder)
-        })
-}
 
-function deleteFolderOrFile(name) {
-    const folder = path.join(ALPS_DRIVE_ROOT, name)
-    return fs.access(folder).then(() => {
+function deleteFolderOrFile(name, folder = false) {
+    function hasFolder(folder) {
+        if (folder) {
+            return path.join(ALPS_DRIVE_ROOT, folder, name)
 
-        return fs.rm(folder, {recursive: true})
+        } else {
+            return path.join(ALPS_DRIVE_ROOT, name)
+        }
+    }
+
+    const file = hasFolder(folder)
+
+    return fs.access(file).then(() => {
+
+        return fs.rm(file, {recursive: true})
     })
         .catch((err) => {
             console.log(err)
@@ -94,20 +105,18 @@ function deleteFolderOrFile(name) {
 
 }
 
-function deleteFolderOrFileInSpecificFolder(name, name2) {
-    const folder = path.join(ALPS_DRIVE_ROOT, name, name2)
-    return fs.access(folder).then(() => {
 
-        return fs.rm(folder, {recursive: true})
-    })
-        .catch((err) => {
-            console.log(err)
-        })
-}
+function uploadFile(file, name, folder = false) {
+    function hasFolder(folder) {
+        if (folder) {
+            return path.join(ALPS_DRIVE_ROOT, folder, name)
 
+        } else {
+            return path.join(ALPS_DRIVE_ROOT, name)
+        }
+    }
 
-function uploadFile(file, name) {
-    const dest = path.join(ALPS_DRIVE_ROOT, name)
+    const dest = hasFolder(folder)
 
     return fs.copyFile(file, dest).then(() => {
         console.log('The file was successfully uploaded!')
@@ -116,29 +125,14 @@ function uploadFile(file, name) {
         .catch((err) => {
             console.log(err)
         })
-
 }
 
-function uploadFileInSpecificFolder(file, name, name2) {
-    const dest = path.join(ALPS_DRIVE_ROOT, name, name2)
-
-    return fs.copyFile(file, dest).then(() => {
-        console.log('The file was successfully uploaded in the specific folder!')
-    })
-
-        .catch((err) => {
-            console.log(err)
-        })
-}
 
 module.exports = {
     createRootFolder: createRootFolder,
     listAllFoldersAndFiles: listAllFoldersAndFiles,
     getFolderOrFileByName: getFolderOrFileByName,
     createFolder: createFolder,
-    createFolderInSpecificFolder: createFolderInSpecificFolder,
     deleteFolderOrFile: deleteFolderOrFile,
-    deleteFolderOrFileInSpecificFolder: deleteFolderOrFileInSpecificFolder,
-    uploadFile: uploadFile,
-    uploadFileInSpecificFolder: uploadFileInSpecificFolder
-};
+    uploadFile: uploadFile
+}
